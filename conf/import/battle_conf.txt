@@ -1,0 +1,2 @@
+base_exp_rate: 10000
+job_exp_rate: 10000
