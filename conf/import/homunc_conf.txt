@@ -1,0 +1,2 @@
+homunculus_friendly_rate: 2000
+hom_rename: yes
