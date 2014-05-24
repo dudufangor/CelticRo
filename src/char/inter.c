@@ -389,7 +389,7 @@ void mapif_parse_accinfo(int fd) {
 	account_id = atoi(query);
 
 	if (account_id < START_ACCOUNT_NUM) {	// is string
-		if ( SQL_ERROR == Sql_Query(sql_handle, "SELECT `account_id`,`name`,`class`,`base_level`,`job_level`,`online` FROM `%s` WHERE `name` LIKE '%s' LIMIT 10", char_db, query_esq)
+		if ( SQL_ERROR == Sql_Query(sql_handle, "SELECT `account_id`,`name`,`klass`,`base_level`,`job_level`,`online` FROM `%s` WHERE `name` LIKE '%s' LIMIT 10", char_db, query_esq)
 				|| Sql_NumRows(sql_handle) == 0 ) {
 			if( Sql_NumRows(sql_handle) == 0 ) {
 				inter_to_fd(fd, u_fd, aid, "No matches were found for your criteria, '%s'",query);
@@ -474,7 +474,7 @@ void mapif_parse_accinfo(int fd) {
 		inter_to_fd(fd, u_fd, aid, "-- Character Details --" );
 
 
-		if ( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`, `name`, `char_num`, `class`, `base_level`, `job_level`, `online` FROM `char` WHERE `account_id` = '%d' ORDER BY `char_num` LIMIT %d", account_id, MAX_CHARS)
+		if ( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`, `name`, `char_num`, `klass`, `base_level`, `job_level`, `online` FROM `char` WHERE `account_id` = '%d' ORDER BY `char_num` LIMIT %d", account_id, MAX_CHARS)
 				|| Sql_NumRows(sql_handle) == 0 ) {
 
 				if( Sql_NumRows(sql_handle) == 0 )
@@ -753,7 +753,7 @@ void inter_final(void)
 
 	if (accreg_pt) aFree(accreg_pt);
 	if(geoip_cache) aFree(geoip_cache);
-	
+
 	return;
 }
 
@@ -770,7 +770,7 @@ int mapif_broadcast(unsigned char *mes, int len, unsigned long fontColor, short 
 {
 	unsigned char *buf = (unsigned char*)aMalloc((len)*sizeof(unsigned char));
 	if (buf == NULL) return 1;
-		
+
 	WBUFW(buf,0) = 0x3800;
 	WBUFW(buf,2) = len;
 	WBUFL(buf,4) = fontColor;
