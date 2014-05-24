@@ -550,7 +550,7 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 			"`str`='%d',`agi`='%d',`vit`='%d',`int`='%d',`dex`='%d',`luk`='%d',"
 			"`option`='%d',`party_id`='%d',`guild_id`='%d',`pet_id`='%d',`homun_id`='%d',`elemental_id`='%d',"
 			"`weapon`='%d',`shield`='%d',`head_top`='%d',`head_mid`='%d',`head_bottom`='%d',"
-			"`last_map`='%s',`last_x`='%d',`last_y`='%d',`save_map`='%s',`save_x`='%d',`save_y`='%d', `rename`='%d',"
+			"`last_map`='%s',`last_x`='%d',`last_y`='%d',`respawn_map`='%s',`respawn_x`='%d',`respawn_y`='%d', `rename`='%d',"
 			"`delete_date`='%lu',`robe`='%d',`moves`='%d'"
 			" WHERE `account_id`='%d' AND `char_id` = '%d'",
 			char_db, p->base_level, p->job_level,
@@ -1197,7 +1197,7 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 		"`str`,`agi`,`vit`,`int`,`dex`,`luk`,`max_hp`,`hp`,`max_sp`,`sp`,"
 		"`status_point`,`skill_point`,`option`,`karma`,`manner`,`party_id`,`guild_id`,`pet_id`,`homun_id`,`elemental_id`,`hair`,"
 		"`hair_color`,`clothes_color`,`weapon`,`shield`,`head_top`,`head_mid`,`head_bottom`,`last_map`,`last_x`,`last_y`,"
-		"`save_map`,`save_x`,`save_y`,`partner_id`,`father`,`mother`,`child`,`fame`,`rename`,`delete_date`,`robe`, `moves`, `unban_time`"
+		"`respawn_map`,`respawn_x`,`respawn_y`,`partner_id`,`father`,`mother`,`child`,`fame`,`rename`,`delete_date`,`robe`, `moves`, `unban_time`"
 		" FROM `%s` WHERE `char_id`=? LIMIT 1", char_db)
 	||	SQL_ERROR == SqlStmt_BindParam(stmt, 0, SQLDT_INT, &char_id, 0)
 	||	SQL_ERROR == SqlStmt_Execute(stmt)
@@ -1624,7 +1624,7 @@ int make_new_char_sql(struct char_session_data* sd, char* name_, int str, int ag
 #if PACKETVER >= 20120307
 	//Insert the new char entry to the database
 	if( SQL_ERROR == Sql_Query(sql_handle, "INSERT INTO `%s` (`account_id`, `char_num`, `name`, `zeny`, `status_point`,`str`, `agi`, `vit`, `int`, `dex`, `luk`, `max_hp`, `hp`,"
-		"`max_sp`, `sp`, `hair`, `hair_color`, `last_map`, `last_x`, `last_y`, `save_map`, `save_x`, `save_y`) VALUES ("
+		"`max_sp`, `sp`, `hair`, `hair_color`, `last_map`, `last_x`, `last_y`, `respawn_map`, `respawn_x`, `respawn_y`) VALUES ("
 		"'%d', '%d', '%s', '%d',  '%d','%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d','%d', '%d','%d', '%d', '%s', '%d', '%d', '%s', '%d', '%d')",
 		char_db, sd->account_id , slot, esc_name, start_zeny, 48, str, agi, vit, int_, dex, luk,
 		(40 * (100 + vit)/100) , (40 * (100 + vit)/100 ),  (11 * (100 + int_)/100), (11 * (100 + int_)/100), hair_style, hair_color,
@@ -1636,7 +1636,7 @@ int make_new_char_sql(struct char_session_data* sd, char* name_, int str, int ag
 #else
 	//Insert the new char entry to the database
 	if( SQL_ERROR == Sql_Query(sql_handle, "INSERT INTO `%s` (`account_id`, `char_num`, `name`, `zeny`, `str`, `agi`, `vit`, `int`, `dex`, `luk`, `max_hp`, `hp`,"
-							   "`max_sp`, `sp`, `hair`, `hair_color`, `last_map`, `last_x`, `last_y`, `save_map`, `save_x`, `save_y`) VALUES ("
+							   "`max_sp`, `sp`, `hair`, `hair_color`, `last_map`, `last_x`, `last_y`, `respawn_map`, `respawn_x`, `respawn_y`) VALUES ("
 							   "'%d', '%d', '%s', '%d',  '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d','%d', '%d','%d', '%d', '%s', '%d', '%d', '%s', '%d', '%d')",
 							   char_db, sd->account_id , slot, esc_name, start_zeny, str, agi, vit, int_, dex, luk,
 							   (40 * (100 + vit)/100) , (40 * (100 + vit)/100 ),  (11 * (100 + int_)/100), (11 * (100 + int_)/100), hair_style, hair_color,
@@ -4020,7 +4020,7 @@ void char_delete2_accept_ack(int fd, int char_id, uint32 result)
 			mmo_char_send(fd, sd);
 		}
 	}
-	
+
 	WFIFOHEAD(fd,10);
 	WFIFOW(fd,0) = 0x82a;
 	WFIFOL(fd,2) = char_id;
@@ -4155,8 +4155,8 @@ static void char_delete2_accept(int fd, struct char_session_data* sd)
 		return;
 	}
 
-	if( ( char_del_level > 0 && base_level >= (unsigned int)char_del_level ) 
-			|| ( char_del_level < 0 && base_level <= (unsigned int)(-char_del_level) ) 
+	if( ( char_del_level > 0 && base_level >= (unsigned int)char_del_level )
+			|| ( char_del_level < 0 && base_level <= (unsigned int)(-char_del_level) )
 			|| !(char_del_option&2) )
 	{// character level config restriction
 		char_delete2_accept_ack(fd, char_id, 2);
@@ -4986,7 +4986,7 @@ static int send_accounts_tologin_sub(DBKey key, DBData *data, va_list ap)
  * @param tick : Scheduled tick
  * @param id : GID linked to that timered call
  * @param data : data transmited for delayed function
- * @return 
+ * @return
  */
 int send_accounts_tologin(int tid, unsigned int tick, int id, intptr_t data)
 {
@@ -5429,8 +5429,8 @@ bool char_checkdb(void){
 		"`base_level`,`job_level`,`base_exp`,`job_exp`,`zeny`,`str`,`agi`,`vit`,`int`,`dex`,`luk`,"
 		"`max_hp`,`hp`,`max_sp`,`sp`,`status_point`,`skill_point`,`option`,`karma`,`manner`,`party_id`,"
 		"`guild_id`,`pet_id`,`homun_id`,`elemental_id`,`hair`,`hair_color`,`clothes_color`,`weapon`,"
-		"`shield`,`head_top`,`head_mid`,`head_bottom`,`robe`,`last_map`,`last_x`,`last_y`,`save_map`,"
-		"`save_x`,`save_y`,`partner_id`,`online`,`father`,`mother`,`child`,`fame`,`rename`,`delete_date`,`moves`"
+		"`shield`,`head_top`,`head_mid`,`head_bottom`,`robe`,`last_map`,`last_x`,`last_y`,`respawn_map`,"
+		"`respawn_x`,`respawn_y`,`partner_id`,`online`,`father`,`mother`,`child`,`fame`,`rename`,`delete_date`,`moves`"
 		" from `%s`;", char_db) ){
 		Sql_ShowDebug(sql_handle);
 		return false;
@@ -5601,7 +5601,7 @@ bool char_checkdb(void){
 		Sql_ShowDebug(sql_handle);
 		return false;
 	}
-	
+
 	//checking cart_db
 	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT  `id`,`char_id`,`nameid`,`amount`,`equip`,`identify`,`refine`,"
 			"`attribute`,`card0`,`card1`,`card2`,`card3`,`expire_time`,`bound`,`unique_id`"
@@ -5630,7 +5630,7 @@ bool char_checkdb(void){
 		Sql_ShowDebug(sql_handle);
 		return false;
 	}
-	
+
 	ShowInfo("DB integrity check finished with success\n");
 	return true;
 }
@@ -6066,7 +6066,7 @@ int do_init(int argc, char **argv)
 		Sql_ShowDebug(sql_handle);
 
 	set_defaultparse(parse_char);
-	
+
 
 	if( (char_fd = make_listen_bind(bind_ip,char_port)) == -1 ) {
 		ShowFatalError("Failed to bind to port '"CL_WHITE"%d"CL_RESET"'\n",char_port);
