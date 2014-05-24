@@ -581,7 +581,7 @@ int mmo_char_tosql(int char_id, struct mmo_charstatus* p)
 		(p->fame != cp->fame)
 	)
 	{
-		if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `class`='%d',"
+		if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `klass`='%d',"
 			"`hair`='%d',`hair_color`='%d',`clothes_color`='%d',"
 			"`partner_id`='%d', `father`='%d', `mother`='%d', `child`='%d',"
 			"`karma`='%d',`manner`='%d', `fame`='%d'"
@@ -1090,7 +1090,7 @@ int mmo_chars_fromsql(struct char_session_data* sd, uint8* buf)
 
 	// read char data
 	if( SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT "
-		"`char_id`,`char_num`,`name`,`class`,`base_level`,`job_level`,`base_exp`,`job_exp`,`zeny`,"
+		"`char_id`,`char_num`,`name`,`klass`,`base_level`,`job_level`,`base_exp`,`job_exp`,`zeny`,"
 		"`str`,`agi`,`vit`,`int`,`dex`,`luk`,`max_hp`,`hp`,`max_sp`,`sp`,"
 		"`status_point`,`skill_point`,`option`,`karma`,`manner`,`hair`,`hair_color`,"
 		"`clothes_color`,`weapon`,`shield`,`head_top`,`head_mid`,`head_bottom`,`last_map`,`rename`,`delete_date`,"
@@ -1193,7 +1193,7 @@ int mmo_char_fromsql(int char_id, struct mmo_charstatus* p, bool load_everything
 
 	// read char data
 	if( SQL_ERROR == SqlStmt_Prepare(stmt, "SELECT "
-		"`char_id`,`account_id`,`char_num`,`name`,`class`,`base_level`,`job_level`,`base_exp`,`job_exp`,`zeny`,"
+		"`char_id`,`account_id`,`char_num`,`name`,`klass`,`base_level`,`job_level`,`base_exp`,`job_exp`,`zeny`,"
 		"`str`,`agi`,`vit`,`int`,`dex`,`luk`,`max_hp`,`hp`,`max_sp`,`sp`,"
 		"`status_point`,`skill_point`,`option`,`karma`,`manner`,`party_id`,`guild_id`,`pet_id`,`homun_id`,`elemental_id`,`hair`,"
 		"`hair_color`,`clothes_color`,`weapon`,`shield`,`head_top`,`head_mid`,`head_bottom`,`last_map`,`last_x`,`last_y`,"
@@ -2605,7 +2605,7 @@ int parse_fromlogin(int fd) {
 					node->sex = sex;
 
 				// get characters
-				if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`class`,`guild_id` FROM `%s` WHERE `account_id` = '%d'", char_db, acc) )
+				if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`klass`,`guild_id` FROM `%s` WHERE `account_id` = '%d'", char_db, acc) )
 					Sql_ShowDebug(sql_handle);
 				for( i = 0; i < MAX_CHARS && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
 				{
@@ -2641,7 +2641,7 @@ int parse_fromlogin(int fd) {
 							class_[i] = (sex ? JOB_KAGEROU : JOB_OBORO);
 					}
 
-					if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `class`='%d', `weapon`='0', `shield`='0', `head_top`='0', `head_mid`='0', `head_bottom`='0' WHERE `char_id`='%d'", char_db, class_[i], char_id[i]) )
+					if( SQL_ERROR == Sql_Query(sql_handle, "UPDATE `%s` SET `klass`='%d', `weapon`='0', `shield`='0', `head_top`='0', `head_mid`='0', `head_bottom`='0' WHERE `char_id`='%d'", char_db, class_[i], char_id[i]) )
 						Sql_ShowDebug(sql_handle);
 
 					if( guild_id[i] )// If there is a guild, update the guild_member data [Skotlex]
@@ -2830,7 +2830,7 @@ void char_read_fame_list(void)
 	memset(chemist_fame_list, 0, sizeof(chemist_fame_list));
 	memset(taekwon_fame_list, 0, sizeof(taekwon_fame_list));
 	// Build Blacksmith ranking list
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`fame`,`name` FROM `%s` WHERE `fame`>0 AND (`class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d') ORDER BY `fame` DESC LIMIT 0,%d", char_db, JOB_BLACKSMITH, JOB_WHITESMITH, JOB_BABY_BLACKSMITH, JOB_MECHANIC, JOB_MECHANIC_T, JOB_BABY_MECHANIC, fame_list_size_smith) )
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`fame`,`name` FROM `%s` WHERE `fame`>0 AND (`klass`='%d' OR `klass`='%d' OR `klass`='%d' OR `klass`='%d' OR `klass`='%d' OR `klass`='%d') ORDER BY `fame` DESC LIMIT 0,%d", char_db, JOB_BLACKSMITH, JOB_WHITESMITH, JOB_BABY_BLACKSMITH, JOB_MECHANIC, JOB_MECHANIC_T, JOB_BABY_MECHANIC, fame_list_size_smith) )
 		Sql_ShowDebug(sql_handle);
 	for( i = 0; i < fame_list_size_smith && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
 	{
@@ -2845,7 +2845,7 @@ void char_read_fame_list(void)
 		memcpy(smith_fame_list[i].name, data, min(len, NAME_LENGTH));
 	}
 	// Build Alchemist ranking list
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`fame`,`name` FROM `%s` WHERE `fame`>0 AND (`class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d' OR `class`='%d') ORDER BY `fame` DESC LIMIT 0,%d", char_db, JOB_ALCHEMIST, JOB_CREATOR, JOB_BABY_ALCHEMIST, JOB_GENETIC, JOB_GENETIC_T, JOB_BABY_GENETIC, fame_list_size_chemist) )
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`fame`,`name` FROM `%s` WHERE `fame`>0 AND (`klass`='%d' OR `klass`='%d' OR `klass`='%d' OR `klass`='%d' OR `klass`='%d' OR `klass`='%d') ORDER BY `fame` DESC LIMIT 0,%d", char_db, JOB_ALCHEMIST, JOB_CREATOR, JOB_BABY_ALCHEMIST, JOB_GENETIC, JOB_GENETIC_T, JOB_BABY_GENETIC, fame_list_size_chemist) )
 		Sql_ShowDebug(sql_handle);
 	for( i = 0; i < fame_list_size_chemist && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
 	{
@@ -2860,7 +2860,7 @@ void char_read_fame_list(void)
 		memcpy(chemist_fame_list[i].name, data, min(len, NAME_LENGTH));
 	}
 	// Build Taekwon ranking list
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`fame`,`name` FROM `%s` WHERE `fame`>0 AND (`class`='%d') ORDER BY `fame` DESC LIMIT 0,%d", char_db, JOB_TAEKWON, fame_list_size_taekwon) )
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`fame`,`name` FROM `%s` WHERE `fame`>0 AND (`klass`='%d') ORDER BY `fame` DESC LIMIT 0,%d", char_db, JOB_TAEKWON, fame_list_size_taekwon) )
 		Sql_ShowDebug(sql_handle);
 	for( i = 0; i < fame_list_size_taekwon && SQL_SUCCESS == Sql_NextRow(sql_handle); ++i )
 	{
@@ -4020,7 +4020,7 @@ void char_delete2_accept_ack(int fd, int char_id, uint32 result)
 			mmo_char_send(fd, sd);
 		}
 	}
-	
+
 	WFIFOHEAD(fd,10);
 	WFIFOW(fd,0) = 0x82a;
 	WFIFOL(fd,2) = char_id;
@@ -4155,8 +4155,8 @@ static void char_delete2_accept(int fd, struct char_session_data* sd)
 		return;
 	}
 
-	if( ( char_del_level > 0 && base_level >= (unsigned int)char_del_level ) 
-			|| ( char_del_level < 0 && base_level <= (unsigned int)(-char_del_level) ) 
+	if( ( char_del_level > 0 && base_level >= (unsigned int)char_del_level )
+			|| ( char_del_level < 0 && base_level <= (unsigned int)(-char_del_level) )
 			|| !(char_del_option&2) )
 	{// character level config restriction
 		char_delete2_accept_ack(fd, char_id, 2);
@@ -4986,7 +4986,7 @@ static int send_accounts_tologin_sub(DBKey key, DBData *data, va_list ap)
  * @param tick : Scheduled tick
  * @param id : GID linked to that timered call
  * @param data : data transmited for delayed function
- * @return 
+ * @return
  */
 int send_accounts_tologin(int tid, unsigned int tick, int id, intptr_t data)
 {
@@ -5425,7 +5425,7 @@ bool char_checkdb(void){
 			return false;
 	}
 	//checking char_db
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`account_id`,`char_num`,`name`,`class`,"
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`,`account_id`,`char_num`,`name`,`klass`,"
 		"`base_level`,`job_level`,`base_exp`,`job_exp`,`zeny`,`str`,`agi`,`vit`,`int`,`dex`,`luk`,"
 		"`max_hp`,`hp`,`max_sp`,`sp`,`status_point`,`skill_point`,`option`,`karma`,`manner`,`party_id`,"
 		"`guild_id`,`pet_id`,`homun_id`,`elemental_id`,`hair`,`hair_color`,`clothes_color`,`weapon`,"
@@ -5502,7 +5502,7 @@ bool char_checkdb(void){
 	}
 	//checking guild_member_db
 	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT  `guild_id`,`account_id`,`char_id`,`hair`,"
-			"`hair_color`,`gender`,`class`,`lv`,`exp`,`exp_payper`,`online`,`position`,`name`"
+			"`hair_color`,`gender`,`klass`,`lv`,`exp`,`exp_payper`,`online`,`position`,`name`"
 			" from `%s`;", guild_member_db) ){
 		Sql_ShowDebug(sql_handle);
 		return false;
@@ -5523,7 +5523,7 @@ bool char_checkdb(void){
 		return false;
 	}
 	//checking pet_db
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT  `pet_id`,`class`,`name`,`account_id`,`char_id`,`level`,"
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT  `pet_id`,`klass`,`name`,`account_id`,`char_id`,`level`,"
 			"`egg_id`,`equip`,`intimate`,`hungry`,`rename_flag`,`incuvate`"
 			" from `%s`;", pet_db) ){
 		Sql_ShowDebug(sql_handle);
@@ -5556,7 +5556,7 @@ bool char_checkdb(void){
 		return false;
 	}
 	//checking homunculus_db
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT  `homun_id`,`char_id`,`class`,`prev_class`,`name`,`level`,`exp`,`intimacy`,`hunger`,"
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT  `homun_id`,`char_id`,`klass`,`prev_class`,`name`,`level`,`exp`,`intimacy`,`hunger`,"
 			"`str`,`agi`,`vit`,`int`,`dex`,`luk`,`hp`,`max_hp`,`sp`,`max_sp`,`skill_point`,`alive`,`rename_flag`,`vaporize` "
 			" from `%s`;", homunculus_db) ){
 		Sql_ShowDebug(sql_handle);
@@ -5568,7 +5568,7 @@ bool char_checkdb(void){
 		return false;
 	}
 	//checking mercenary_db
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT  `mer_id`,`char_id`,`class`,`hp`,`sp`,`kill_counter`,`life_time` from `%s`;", mercenary_db) ){
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT  `mer_id`,`char_id`,`klass`,`hp`,`sp`,`kill_counter`,`life_time` from `%s`;", mercenary_db) ){
 		Sql_ShowDebug(sql_handle);
 		return false;
 	}
@@ -5580,7 +5580,7 @@ bool char_checkdb(void){
 		return false;
 	}
 	//checking elemental_db
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT  `ele_id`,`char_id`,`class`,`mode`,`hp`,`sp`,`max_hp`,`max_sp`,"
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT  `ele_id`,`char_id`,`klass`,`mode`,`hp`,`sp`,`max_hp`,`max_sp`,"
 			"`atk1`,`atk2`,`matk`,`aspd`,`def`,`mdef`,`flee`,`hit`,`life_time` "
 			" from `%s`;", elemental_db) ){
 		Sql_ShowDebug(sql_handle);
@@ -5601,7 +5601,7 @@ bool char_checkdb(void){
 		Sql_ShowDebug(sql_handle);
 		return false;
 	}
-	
+
 	//checking cart_db
 	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT  `id`,`char_id`,`nameid`,`amount`,`equip`,`identify`,`refine`,"
 			"`attribute`,`card0`,`card1`,`card2`,`card3`,`expire_time`,`bound`,`unique_id`"
@@ -5630,7 +5630,7 @@ bool char_checkdb(void){
 		Sql_ShowDebug(sql_handle);
 		return false;
 	}
-	
+
 	ShowInfo("DB integrity check finished with success\n");
 	return true;
 }
@@ -6066,7 +6066,7 @@ int do_init(int argc, char **argv)
 		Sql_ShowDebug(sql_handle);
 
 	set_defaultparse(parse_char);
-	
+
 
 	if( (char_fd = make_listen_bind(bind_ip,char_port)) == -1 ) {
 		ShowFatalError("Failed to bind to port '"CL_WHITE"%d"CL_RESET"'\n",char_port);

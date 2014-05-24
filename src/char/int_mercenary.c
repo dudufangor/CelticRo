@@ -73,7 +73,7 @@ bool mapif_mercenary_save(struct s_mercenary* merc)
 	if( merc->mercenary_id == 0 )
 	{ // Create new DB entry
 		if( SQL_ERROR == Sql_Query(sql_handle,
-			"INSERT INTO `%s` (`char_id`,`class`,`hp`,`sp`,`kill_counter`,`life_time`) VALUES ('%d','%d','%d','%d','%u','%u')",
+			"INSERT INTO `%s` (`char_id`,`klass`,`hp`,`sp`,`kill_counter`,`life_time`) VALUES ('%d','%d','%d','%d','%u','%u')",
 			mercenary_db, merc->char_id, merc->class_, merc->hp, merc->sp, merc->kill_count, merc->life_time) )
 		{
 			Sql_ShowDebug(sql_handle);
@@ -83,7 +83,7 @@ bool mapif_mercenary_save(struct s_mercenary* merc)
 			merc->mercenary_id = (int)Sql_LastInsertId(sql_handle);
 	}
 	else if( SQL_ERROR == Sql_Query(sql_handle,
-		"UPDATE `%s` SET `char_id` = '%d', `class` = '%d', `hp` = '%d', `sp` = '%d', `kill_counter` = '%u', `life_time` = '%u' WHERE `mer_id` = '%d'",
+		"UPDATE `%s` SET `char_id` = '%d', `klass` = '%d', `hp` = '%d', `sp` = '%d', `kill_counter` = '%u', `life_time` = '%u' WHERE `mer_id` = '%d'",
 		mercenary_db, merc->char_id, merc->class_, merc->hp, merc->sp, merc->kill_count, merc->life_time, merc->mercenary_id) )
 	{ // Update DB entry
 		Sql_ShowDebug(sql_handle);
@@ -101,7 +101,7 @@ bool mapif_mercenary_load(int merc_id, int char_id, struct s_mercenary *merc)
 	merc->mercenary_id = merc_id;
 	merc->char_id = char_id;
 
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `class`, `hp`, `sp`, `kill_counter`, `life_time` FROM `%s` WHERE `mer_id` = '%d' AND `char_id` = '%d'", mercenary_db, merc_id, char_id) )
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `klass`, `hp`, `sp`, `kill_counter`, `life_time` FROM `%s` WHERE `mer_id` = '%d' AND `char_id` = '%d'", mercenary_db, merc_id, char_id) )
 	{
 		Sql_ShowDebug(sql_handle);
 		return false;
@@ -121,7 +121,7 @@ bool mapif_mercenary_load(int merc_id, int char_id, struct s_mercenary *merc)
 	Sql_FreeResult(sql_handle);
 	if( save_log )
 		ShowInfo("Mercenary loaded (%d - %d).\n", merc->mercenary_id, merc->char_id);
-	
+
 	return true;
 }
 
