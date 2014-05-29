@@ -107,7 +107,7 @@ int inter_guild_tosql(struct guild *g,int flag)
 	// GS_LEVEL `guild_lv`,`max_member`,`exp`,`next_exp`,`skill_point`
 	// GS_BASIC `name`,`master`,`char_id`
 
-	// GS_MEMBER `guild_member` (`guild_id`,`account_id`,`char_id`,`hair`,`hair_color`,`gender`,`class`,`lv`,`exp`,`exp_payper`,`online`,`position`,`name`)
+	// GS_MEMBER `guild_member` (`guild_id`,`account_id`,`char_id`,`hair`,`hair_color`,`gender`,`klass`,`lv`,`exp`,`exp_payper`,`online`,`position`,`name`)
 	// GS_POSITION `guild_position` (`guild_id`,`position`,`name`,`mode`,`exp_mode`)
 	// GS_ALLIANCE `guild_alliance` (`guild_id`,`opposition`,`alliance_id`,`name`)
 	// GS_EXPULSION `guild_expulsion` (`guild_id`,`account_id`,`name`,`mes`)
@@ -236,7 +236,7 @@ int inter_guild_tosql(struct guild *g,int flag)
 			if(m->account_id) {
 				//Since nothing references guild member table as foreign keys, it's safe to use REPLACE INTO
 				Sql_EscapeStringLen(sql_handle, esc_name, m->name, strnlen(m->name, NAME_LENGTH));
-				if( SQL_ERROR == Sql_Query(sql_handle, "REPLACE INTO `%s` (`guild_id`,`account_id`,`char_id`,`hair`,`hair_color`,`gender`,`class`,`lv`,`exp`,`exp_payper`,`online`,`position`,`name`) "
+				if( SQL_ERROR == Sql_Query(sql_handle, "REPLACE INTO `%s` (`guild_id`,`account_id`,`char_id`,`hair`,`hair_color`,`gender`,`klass`,`lv`,`exp`,`exp_payper`,`online`,`position`,`name`) "
 					"VALUES ('%d','%d','%d','%d','%d','%d','%d','%d','%"PRIu64"','%d','%d','%d','%s')",
 					guild_member_db, g->guild_id, m->account_id, m->char_id,
 					m->hair, m->hair_color, m->gender,
@@ -406,7 +406,7 @@ struct guild * inter_guild_fromsql(int guild_id)
 	}
 
 	// load guild member info
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `account_id`,`char_id`,`hair`,`hair_color`,`gender`,`class`,`lv`,`exp`,`exp_payper`,`online`,`position`,`name` "
+	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `account_id`,`char_id`,`hair`,`hair_color`,`gender`,`klass`,`lv`,`exp`,`exp_payper`,`online`,`position`,`name` "
 		"FROM `%s` WHERE `guild_id`='%d' ORDER BY `position`", guild_member_db, guild_id) )
 	{
 		Sql_ShowDebug(sql_handle);
