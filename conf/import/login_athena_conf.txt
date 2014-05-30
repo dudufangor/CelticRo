@@ -1,0 +1,12 @@
+// How many characters are allowed per account?
+// You cannot exceed the limit of MAX_CHARS slots, defined in mmo.h, or chars_per_account
+// will default to MAX_CHARS.
+// 0 will default to the value of MIN_CHARS. (default)
+chars_per_account: 15
+
+// Max character limit increase for VIP accounts (0 to disable)
+// Increase the value of MAX_CHARS if you want to increase vip_char_increase.
+// Note: The amount of VIP characters = MAX_CHARS - chars_per_account.
+// Note 2: This setting must be set after chars_per_account.
+// Default: 6
+vip_char_increase: 9
