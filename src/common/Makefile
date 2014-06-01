@@ -1,0 +1,94 @@
+
+#COMMON_OBJ = $(ls *.c | grep -viw sql.c | sed -e "s/\.c/\.o/g")
+COMMON_OBJ = core.o socket.o timer.o db.o nullpo.o malloc.o showmsg.o strlib.o utils.o \
+	grfio.o mapindex.o ers.o md5calc.o minicore.o minisocket.o minimalloc.o random.o des.o \
+	conf.o thread.o mutex.o raconf.o mempool.o msg_conf.o cli.o
+COMMON_DIR_OBJ = $(COMMON_OBJ:%=obj_all/%)
+COMMON_H = $(shell ls ../common/*.h)
+COMMON_SQL_OBJ = obj_sql/sql.o
+COMMON_SQL_H = sql.h
+COMMON_AR = obj_all/common.a
+COMMON_SQL_AR = obj_sql/common_sql.a
+
+MT19937AR_OBJ = ../../3rdparty/mt19937ar/mt19937ar.o
+MT19937AR_H = ../../3rdparty/mt19937ar/mt19937ar.h
+MT19937AR_INCLUDE = -I../../3rdparty/mt19937ar
+
+LIBCONFIG_H = $(shell ls ../../3rdparty/libconfig/*.h)
+LIBCONFIG_AR = ../../3rdparty/libconfig/obj/libconfig.a
+LIBCONFIG_INCLUDE = -I../../3rdparty/libconfig
+
+HAVE_MYSQL=yes
+ifeq ($(HAVE_MYSQL),yes)
+	SQL_DEPENDS=common common_sql
+else
+	SQL_DEPENDS=needs_mysql
+endif
+ALL_DEPENDS=sql
+
+
+
+#####################################################################
+.PHONY : all sql clean help
+
+all: $(ALL_DEPENDS)
+
+sql: $(SQL_DEPENDS)
+
+clean:
+	@echo "	CLEAN	common"
+	@rm -rf *.o obj_all obj_sql
+
+help:
+	@echo "possible targets are 'sql' 'all' 'clean' 'help'"
+	@echo "'sql'    - builds object files used in sql servers"
+	@echo "'all'    - builds all above targets"
+	@echo "'clean'  - cleans builds and objects"
+	@echo "'help'   - outputs this message"
+
+#####################################################################
+
+needs_mysql:
+	@echo "MySQL not found or disabled by the configure script"
+	@exit 1
+
+obj_all:
+	@echo "	MKDIR	obj_all"
+	@-mkdir obj_all
+
+obj_sql:
+	@echo "	MKDIR	obj_sql"
+	@-mkdir obj_sql
+
+$(COMMON_AR): $(COMMON_DIR_OBJ)
+	@echo "	AR	$@"
+	@/usr/bin/ar rcs $(COMMON_AR) $(COMMON_DIR_OBJ)
+
+$(COMMON_SQL_AR): $(COMMON_SQL_OBJ)
+	@echo "	AR	$@"
+	@/usr/bin/ar rcs $(COMMON_SQL_AR) $(COMMON_SQL_OBJ)
+
+
+common: obj_all $(COMMON_DIR_OBJ) $(MT19937AR_OBJ) $(LIBCONFIG_AR) $(COMMON_AR)
+
+common_sql: obj_sql $(COMMON_SQL_OBJ) $(COMMON_SQL_AR)
+
+obj_all/%.o: %.c $(COMMON_H) $(MT19937AR_H) $(LIBCONFIG_H)
+	@echo "	CC	$<"
+	@gcc -g -O2 -DMAXCONN=16384 -pipe -ffast-math -Wall -DHAS_TLS -flto -Wno-switch -fno-strict-aliasing -DHAVE_SETRLIMIT -DHAVE_STRNLEN -DPACKETVER=20130807  -Wno-pointer-sign -DHAVE_MONOTONIC_CLOCK $(MT19937AR_INCLUDE) $(LIBCONFIG_INCLUDE)  -I../common -I/usr/include -c $(OUTPUT_OPTION) $<
+
+obj_all/mini%.o: %.c $(COMMON_H) $(MT19937AR_H) $(LIBCONFIG_H)
+	@echo "	CC	$<"
+	@gcc -g -O2 -DMAXCONN=16384 -pipe -ffast-math -Wall -DHAS_TLS -flto -Wno-switch -fno-strict-aliasing -DHAVE_SETRLIMIT -DHAVE_STRNLEN -DPACKETVER=20130807  -Wno-pointer-sign -DHAVE_MONOTONIC_CLOCK $(MT19937AR_INCLUDE) $(LIBCONFIG_INCLUDE) -DMINICORE  -I../common -I/usr/include -c $(OUTPUT_OPTION) $<
+
+obj_sql/%.o: %.c $(COMMON_H) $(COMMON_SQL_H) $(LIBCONFIG_H)
+	@echo "	CC	$<"
+	@gcc -g -O2 -DMAXCONN=16384 -pipe -ffast-math -Wall -DHAS_TLS -flto -Wno-switch -fno-strict-aliasing -DHAVE_SETRLIMIT -DHAVE_STRNLEN -DPACKETVER=20130807  -Wno-pointer-sign -DHAVE_MONOTONIC_CLOCK $(LIBCONFIG_INCLUDE) -I/usr/include/mysql  -I../common -I/usr/include -c $(OUTPUT_OPTION) $<
+
+
+# missing object files
+$(MT19937AR_OBJ):
+	@$(MAKE) -C ../../3rdparty/mt19937ar
+
+$(LIBCONFIG_AR):
+	@$(MAKE) -C ../../3rdparty/libconfig

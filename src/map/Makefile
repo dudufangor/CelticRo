@@ -1,0 +1,91 @@
+
+COMMON_H = $(shell ls ../common/*.h)
+COMMON_AR = ../common/obj_all/common.a
+COMMON_SQL_AR = ../common/obj_sql/common_sql.a
+COMMON_INCLUDE = -I../common/
+
+MT19937AR_OBJ = ../../3rdparty/mt19937ar/mt19937ar.o
+MT19937AR_H = ../../3rdparty/mt19937ar/mt19937ar.h
+MT19937AR_INCLUDE = -I../../3rdparty/mt19937ar
+
+LIBCONFIG_H = $(shell ls ../../3rdparty/libconfig/*.h)
+LIBCONFIG_AR = ../../3rdparty/libconfig/obj/libconfig.a
+LIBCONFIG_INCLUDE = -I../../3rdparty/libconfig
+
+MAP_OBJ = $(shell ls *.c | sed -e "s/\.c/\.o/g")
+MAP_SQL_OBJ = $(MAP_OBJ:%=obj_sql/%)
+MAP_H = $(shell ls ../map/*.h) \
+	$(shell ls ../config/*.h) 
+
+HAVE_MYSQL=yes
+ifeq ($(HAVE_MYSQL),yes)
+	SQL_DEPENDS=map-server
+else
+	SQL_DEPENDS=needs_mysql
+endif
+ALL_DEPENDS=sql
+
+HAVE_PCRE=yes
+ifeq ($(HAVE_PCRE),yes)
+	PCRE_CFLAGS=-DPCRE_SUPPORT 
+else
+	PCRE_CFLAGS=
+endif
+
+
+
+#####################################################################
+.PHONY : all sql clean help
+
+all: $(ALL_DEPENDS)
+
+sql: $(SQL_DEPENDS)
+
+clean:
+	@echo "	CLEAN	map"
+	@rm -rf *.o obj_sql ../../map-server
+
+help:
+	@echo "possible targets are 'sql' 'all' 'clean' 'help'"
+	@echo "'sql'   - map server (SQL version)"
+	@echo "'all'   - builds all above targets"
+	@echo "'clean' - cleans builds and objects"
+	@echo "'help'  - outputs this message"
+
+#####################################################################
+
+needs_mysql:
+	@echo "MySQL not found or disabled by the configure script"
+	@exit 1
+
+# object directories
+
+obj_sql:
+	@echo "	MKDIR	obj_sql"
+	@-mkdir obj_sql
+
+# executables
+
+map-server: obj_sql $(MAP_SQL_OBJ) $(COMMON_SQL_AR) $(COMMON_AR) $(LIBCONFIG_AR)
+	@echo "	LD	map-server"
+	@gcc  -flto -L/usr/lib -lpthread -o ../../map-server $(MAP_SQL_OBJ) $(COMMON_SQL_AR) $(COMMON_AR) $(MT19937AR_OBJ) $(LIBCONFIG_AR) -lpcre -lpthread -lpthread -lpthread -lpthread -lpthread -lpthread -lpthread -lm -lz  -ldl -lpcre -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lpthread -lz -lm -ldl
+
+
+# map object files
+
+obj_sql/%.o: %.c $(MAP_H) $(COMMON_H)  $(MT19937AR_H) $(LIBCONFIG_H)
+	@echo "	CC	$<"
+	@gcc -g -O2 -DMAXCONN=16384 -pipe -ffast-math -Wall -DHAS_TLS -flto -Wno-switch -fno-strict-aliasing -DHAVE_SETRLIMIT -DHAVE_STRNLEN -DPACKETVER=20130807  -Wno-pointer-sign -DHAVE_MONOTONIC_CLOCK $(COMMON_INCLUDE) $(MT19937AR_INCLUDE) $(LIBCONFIG_INCLUDE) $(PCRE_CFLAGS) -I/usr/include/mysql  -I../common -I/usr/include -c $(OUTPUT_OPTION) $<
+
+# missing object files
+$(COMMON_AR):
+	@$(MAKE) -C ../common sql
+
+$(COMMON_SQL_AR):
+	@$(MAKE) -C ../common sql
+
+$(MT19937AR_OBJ):
+	@$(MAKE) -C ../../3rdparty/mt19937ar
+
+$(LIBCONFIG_AR):
+	@$(MAKE) -C ../../3rdparty/libconfig
