@@ -300,20 +300,6 @@ prontera,146,89,6	script	Kafra Employee::kaf_prontera5	117,{
 	callfunc "F_KafEnd",0,1,"in the city of Prontera";
 }
 
-prontera,160,187,6	script	Kafra Employee::kaf_prontera5	117,{
-	cutin "kafra_04",2;
-	callfunc "F_KafSet";
-	mes "[Kafra Employee]";
-	mes "Welcome to the";
-	mes "Kafra Corporation.";
-	mes "The Kafra services";
-	mes "are always on your side.";
-	mes "How may I assist you?";
-	callfunc "F_Kafra",5,0,0,40,800;
-	savepoint "prontera",160,180;
-	callfunc "F_KafEnd",0,1,"in the city of Prontera";
-}
-
 // Yuno
 //============================================================
 yuno,152,187,4	script	Kafra Employee::kaf_yuno	860,{
@@ -662,7 +648,7 @@ mjolnir_02,83,362,4	script	Kafra Employee::kaf_mjolnir_02	116,{
 // - Morroc Ruins
 moc_ruins,59,157,5	script	Kafra Employee::moc_ruins	114,{
 	cutin "kafra_04",2;
-	mes "[Kafra Employee]";
+	mes "[Kafra Employeesmployee]";
 	mes "Welcome!";
 	mes "The Kafra Corporation";
 	mes "will always support the";
