@@ -1,0 +1,21 @@
+hp_rate: 150
+
+sp_rate: 150
+
+natural_healhp_interval: 5000
+
+natural_healsp_interval: 6000
+
+natural_heal_skill_interval: 7000
+
+natural_heal_weight_rate: 50
+
+max_aspd: 195
+
+max_third_aspd: 199
+
+max_cart_weight: 10000
+
+idle_no_autoloot: 0
+
+vip_storage_increase: 500
