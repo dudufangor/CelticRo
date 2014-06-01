@@ -17,5 +17,3 @@ max_third_aspd: 199
 max_cart_weight: 10000
 
 idle_no_autoloot: 0
-
-vip_storage_increase: 500
