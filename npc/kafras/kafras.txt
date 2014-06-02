@@ -301,7 +301,7 @@ prontera,146,89,6	script	Kafra Employee::kaf_prontera5	117,{
 }
 
 prontera,160,187,6	script	Kafra Employee::kaf_prontera5	117,{
-	cutin "kafra_04",2;
+	cutin "kafra_01",2;
 	callfunc "F_KafSet";
 	mes "[Kafra Employee]";
 	mes "Welcome to the";
